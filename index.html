@@ -135,6 +135,11 @@
       color: #ffd6dd;
       border:1px solid rgba(255,79,109,.35);
     }
+    .btn-ok{
+      background: rgba(48,209,88,.14);
+      color: #d8ffe4;
+      border:1px solid rgba(48,209,88,.35);
+    }
 
     .toolbar{
       display:flex;
@@ -297,6 +302,7 @@
           <div class="actions">
             <button class="btn-primary" type="submit" id="btnSave">Guardar</button>
             <button class="btn-ghost" type="button" id="btnClear">Limpiar</button>
+            <button class="btn-ok" type="button" id="btnDownload">Descargar Excel (CSV)</button>
             <button class="btn-danger" type="button" id="btnDeleteAll">Eliminar todo</button>
           </div>
 
@@ -334,7 +340,6 @@
     const $ = (sel) => document.querySelector(sel);
 
     function uuid() {
-      // id simple para registros
       return "id_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
     }
 
@@ -357,20 +362,56 @@
     }
 
     function fmtDateISOtoDMY(iso) {
-      // iso: YYYY-MM-DD
       if (!iso) return "";
       const [y, m, d] = iso.split("-");
       if (!y || !m || !d) return iso;
       return `${d}/${m}/${y}`;
     }
 
+    function todayISO() {
+      const t = new Date();
+      const yyyy = t.getFullYear();
+      const mm = String(t.getMonth() + 1).padStart(2, "0");
+      const dd = String(t.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+
     function contentDotColor(tipo) {
-      // sin complicar: solo devolvemos un color por tipo
       const t = normalize(tipo);
       if (t.includes("entrevista")) return "var(--ok)";
       if (t.includes("comunicado")) return "var(--warn)";
       if (t.includes("video") || t.includes("reel") || t.includes("historia") || t.includes("live")) return "var(--accent)";
       return "var(--text)";
+    }
+
+    function escapeHtml(str) {
+      return (str || "").toString()
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // CSV helpers
+    function csvEscape(value) {
+      const s = (value ?? "").toString();
+      // Si tiene comillas, saltos, comas o ;, lo encapsulamos en " "
+      const mustQuote = /[",;\n\r]/.test(s);
+      const escaped = s.replaceAll('"', '""');
+      return mustQuote ? `"${escaped}"` : escaped;
+    }
+
+    function downloadTextFile(filename, content, mime = "text/csv;charset=utf-8") {
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
     }
 
     // ==========================
@@ -383,7 +424,6 @@
     // RENDER
     // ==========================
     function render() {
-      // stats
       $("#statsPill").textContent = `${records.length} registro${records.length === 1 ? "" : "s"}`;
       $("#filteredPill").textContent = `Mostrando: ${filtered.length}`;
 
@@ -399,7 +439,6 @@
         return;
       }
 
-      // Orden: más reciente primero por fecha (si existe)
       const sorted = [...filtered].sort((a, b) => {
         const da = a.fecha || "";
         const db = b.fecha || "";
@@ -445,15 +484,6 @@
       `;
     }
 
-    function escapeHtml(str) {
-      return (str || "").toString()
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
     // ==========================
     // FILTER
     // ==========================
@@ -490,11 +520,7 @@
     }
 
     function setTodayDefault() {
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, "0");
-      const dd = String(today.getDate()).padStart(2, "0");
-      $("#fecha").value = `${yyyy}-${mm}-${dd}`;
+      $("#fecha").value = todayISO();
     }
 
     $("#form").addEventListener("submit", (e) => {
@@ -510,10 +536,8 @@
       const editId = $("#editId").value;
 
       if (editId) {
-        // update
         records = records.map(r => r.id === editId ? { ...r, medio, tipo, periodista, fecha } : r);
       } else {
-        // create
         records.unshift({
           id: uuid(),
           medio, tipo, periodista, fecha,
@@ -547,7 +571,42 @@
     $("#search").addEventListener("input", applyFilter);
 
     // ==========================
-    // GLOBAL FUNCTIONS (para botones en tabla)
+    // DOWNLOAD CSV (Excel)
+    // ==========================
+    $("#btnDownload").addEventListener("click", () => {
+      const list = filtered.length ? [...filtered] : [];
+      if (!list.length) {
+        alert("No hay registros para descargar.");
+        return;
+      }
+
+      // Orden igual a tabla: más reciente primero por fecha
+      list.sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
+
+      // Separador recomendado para Excel en ES: ';'
+      const SEP = ";";
+
+      const headers = ["Medio", "Tipo de contenido", "Periodista", "Fecha"];
+      const lines = [];
+      lines.push(headers.map(csvEscape).join(SEP));
+
+      for (const r of list) {
+        const row = [
+          r.medio ?? "",
+          r.tipo ?? "",
+          r.periodista ?? "",
+          fmtDateISOtoDMY(r.fecha ?? "")
+        ];
+        lines.push(row.map(csvEscape).join(SEP));
+      }
+
+      const csv = lines.join("\n");
+      const filename = `control_plan_medios_${todayISO()}.csv`;
+      downloadTextFile(filename, csv);
+    });
+
+    // ==========================
+    // GLOBAL FUNCTIONS (tabla)
     // ==========================
     window.editRecord = function(id) {
       const r = records.find(x => x.id === id);
@@ -575,7 +634,6 @@
       saveData(records);
       applyFilter();
 
-      // si estabas editando el que borraste, limpia el form
       if ($("#editId").value === id) {
         resetForm();
         setTodayDefault();
