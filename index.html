@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Control Plan de Medios</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --card:#111a2e;
+      --muted:#9fb0d0;
+      --text:#e9f0ff;
+      --border:rgba(255,255,255,.10);
+      --accent:#4f8cff;
+      --danger:#ff4f6d;
+      --ok:#30d158;
+      --warn:#ffcc00;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 20% -10%, rgba(79,140,255,.25), transparent 55%),
+                  radial-gradient(900px 500px at 100% 0%, rgba(48,209,88,.15), transparent 50%),
+                  var(--bg);
+      color:var(--text);
+    }
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      padding:28px 16px 40px;
+    }
+    header{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:18px;
+    }
+    h1{
+      font-size:22px;
+      margin:0;
+      letter-spacing:.2px;
+    }
+    .sub{
+      color:var(--muted);
+      margin-top:6px;
+      font-size:13px;
+      line-height:1.35;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 380px 1fr;
+      gap:16px;
+    }
+    @media (max-width: 980px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+      box-shadow: 0 18px 40px rgba(0,0,0,.35);
+    }
+    .card h2{
+      font-size:14px;
+      margin:0 0 12px;
+      color:var(--muted);
+      font-weight:600;
+      letter-spacing:.2px;
+    }
+
+    form{
+      display:grid;
+      gap:10px;
+    }
+    label{
+      font-size:12px;
+      color:var(--muted);
+      margin-bottom:6px;
+      display:block;
+    }
+    input, select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background: rgba(10,16,30,.6);
+      color:var(--text);
+      outline:none;
+    }
+    input:focus, select:focus{
+      border-color: rgba(79,140,255,.55);
+      box-shadow: 0 0 0 3px rgba(79,140,255,.15);
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 520px){
+      .row{ grid-template-columns: 1fr; }
+    }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:6px;
+    }
+    button{
+      border:0;
+      border-radius:12px;
+      padding:10px 12px;
+      cursor:pointer;
+      font-weight:700;
+      letter-spacing:.2px;
+    }
+    .btn-primary{
+      background: var(--accent);
+      color:#071022;
+    }
+    .btn-ghost{
+      background: transparent;
+      color: var(--text);
+      border:1px solid var(--border);
+    }
+    .btn-danger{
+      background: rgba(255,79,109,.15);
+      color: #ffd6dd;
+      border:1px solid rgba(255,79,109,.35);
+    }
+
+    .toolbar{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:10px;
+    }
+    .search{
+      flex:1;
+      min-width:220px;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .pill{
+      font-size:12px;
+      color:var(--muted);
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:6px 10px;
+      background: rgba(255,255,255,.03);
+      white-space:nowrap;
+    }
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background: rgba(10,16,30,.35);
+    }
+    thead th{
+      text-align:left;
+      font-size:12px;
+      color:var(--muted);
+      padding:12px;
+      border-bottom:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    tbody td{
+      padding:12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      font-size:13px;
+      vertical-align:top;
+    }
+    tbody tr:hover{
+      background: rgba(79,140,255,.07);
+    }
+    tbody tr:last-child td{
+      border-bottom:0;
+    }
+
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      font-size:12px;
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+    }
+    .dot{
+      width:8px; height:8px; border-radius:50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 3px rgba(79,140,255,.15);
+    }
+
+    .table-actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .mini{
+      padding:7px 10px;
+      border-radius:10px;
+      font-size:12px;
+      font-weight:800;
+    }
+
+    .empty{
+      padding:18px;
+      text-align:center;
+      color: var(--muted);
+      border:1px dashed rgba(255,255,255,.18);
+      border-radius:14px;
+      background: rgba(255,255,255,.02);
+    }
+    footer{
+      margin-top:14px;
+      color: var(--muted);
+      font-size:12px;
+      line-height:1.4;
+    }
+    .hint{
+      color: rgba(233,240,255,.85);
+      font-weight:700;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Control Plan de Medios</h1>
+        <div class="sub">Formulario + tabla (LocalStorage). Sin backend. Ideal para GitHub Pages.</div>
+      </div>
+      <div class="pill" id="statsPill">0 registros</div>
+    </header>
+
+    <div class="grid">
+      <!-- Formulario -->
+      <section class="card">
+        <h2>Registrar contenido</h2>
+
+        <form id="form">
+          <div>
+            <label for="medio">Medio</label>
+            <input id="medio" name="medio" type="text" placeholder="Ej: Caracol, RCN, Diario del Sur..." required maxlength="80" />
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="tipo">Tipo de contenido</label>
+              <select id="tipo" name="tipo" required>
+                <option value="" selected disabled>Selecciona...</option>
+                <option>Nota</option>
+                <option>Entrevista</option>
+                <option>Comunicado</option>
+                <option>Video</option>
+                <option>Reel</option>
+                <option>Historia</option>
+                <option>Live</option>
+                <option>Otro</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="fecha">Fecha</label>
+              <input id="fecha" name="fecha" type="date" required />
+            </div>
+          </div>
+
+          <div>
+            <label for="periodista">Periodista</label>
+            <input id="periodista" name="periodista" type="text" placeholder="Nombre del periodista" required maxlength="80" />
+          </div>
+
+          <input type="hidden" id="editId" value="" />
+
+          <div class="actions">
+            <button class="btn-primary" type="submit" id="btnSave">Guardar</button>
+            <button class="btn-ghost" type="button" id="btnClear">Limpiar</button>
+            <button class="btn-danger" type="button" id="btnDeleteAll">Eliminar todo</button>
+          </div>
+
+          <footer>
+            Tip: esto se guarda en <span class="hint">LocalStorage</span>. Si borras datos del navegador, se borra el historial.
+          </footer>
+        </form>
+      </section>
+
+      <!-- Tabla -->
+      <section class="card">
+        <h2>Registros</h2>
+
+        <div class="toolbar">
+          <div class="search">
+            <input id="search" type="search" placeholder="Buscar por medio / tipo / periodista / fecha..." />
+          </div>
+          <div class="pill" id="filteredPill">Mostrando: 0</div>
+        </div>
+
+        <div id="tableWrap"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // ==========================
+    // CONFIG
+    // ==========================
+    const LS_KEY = "control_plan_medios_v1";
+
+    // ==========================
+    // HELPERS
+    // ==========================
+    const $ = (sel) => document.querySelector(sel);
+
+    function uuid() {
+      // id simple para registros
+      return "id_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+    }
+
+    function loadData() {
+      try {
+        const raw = localStorage.getItem(LS_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveData(list) {
+      localStorage.setItem(LS_KEY, JSON.stringify(list));
+    }
+
+    function normalize(str) {
+      return (str || "").toString().toLowerCase().trim();
+    }
+
+    function fmtDateISOtoDMY(iso) {
+      // iso: YYYY-MM-DD
+      if (!iso) return "";
+      const [y, m, d] = iso.split("-");
+      if (!y || !m || !d) return iso;
+      return `${d}/${m}/${y}`;
+    }
+
+    function contentDotColor(tipo) {
+      // sin complicar: solo devolvemos un color por tipo
+      const t = normalize(tipo);
+      if (t.includes("entrevista")) return "var(--ok)";
+      if (t.includes("comunicado")) return "var(--warn)";
+      if (t.includes("video") || t.includes("reel") || t.includes("historia") || t.includes("live")) return "var(--accent)";
+      return "var(--text)";
+    }
+
+    // ==========================
+    // STATE
+    // ==========================
+    let records = loadData();
+    let filtered = [...records];
+
+    // ==========================
+    // RENDER
+    // ==========================
+    function render() {
+      // stats
+      $("#statsPill").textContent = `${records.length} registro${records.length === 1 ? "" : "s"}`;
+      $("#filteredPill").textContent = `Mostrando: ${filtered.length}`;
+
+      const wrap = $("#tableWrap");
+
+      if (filtered.length === 0) {
+        wrap.innerHTML = `
+          <div class="empty">
+            No hay registros para mostrar.<br/>
+            <span style="font-size:12px;">Crea tu primer registro con el formulario.</span>
+          </div>
+        `;
+        return;
+      }
+
+      // Orden: más reciente primero por fecha (si existe)
+      const sorted = [...filtered].sort((a, b) => {
+        const da = a.fecha || "";
+        const db = b.fecha || "";
+        return db.localeCompare(da);
+      });
+
+      wrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 24%;">Medio</th>
+              <th style="width: 20%;">Tipo de contenido</th>
+              <th style="width: 26%;">Periodista</th>
+              <th style="width: 16%;">Fecha</th>
+              <th style="width: 14%;">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sorted.map(r => {
+              const dotColor = contentDotColor(r.tipo);
+              return `
+                <tr>
+                  <td>${escapeHtml(r.medio)}</td>
+                  <td>
+                    <span class="tag">
+                      <span class="dot" style="background:${dotColor}; box-shadow:0 0 0 3px rgba(255,255,255,.07)"></span>
+                      ${escapeHtml(r.tipo)}
+                    </span>
+                  </td>
+                  <td>${escapeHtml(r.periodista)}</td>
+                  <td>${escapeHtml(fmtDateISOtoDMY(r.fecha))}</td>
+                  <td>
+                    <div class="table-actions">
+                      <button class="btn-ghost mini" type="button" onclick="editRecord('${r.id}')">Editar</button>
+                      <button class="btn-danger mini" type="button" onclick="deleteRecord('${r.id}')">Eliminar</button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function escapeHtml(str) {
+      return (str || "").toString()
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    // ==========================
+    // FILTER
+    // ==========================
+    function applyFilter() {
+      const q = normalize($("#search").value);
+      if (!q) {
+        filtered = [...records];
+        render();
+        return;
+      }
+
+      filtered = records.filter(r => {
+        const blob = [
+          r.medio,
+          r.tipo,
+          r.periodista,
+          r.fecha,
+          fmtDateISOtoDMY(r.fecha)
+        ].map(normalize).join(" | ");
+        return blob.includes(q);
+      });
+
+      render();
+    }
+
+    // ==========================
+    // FORM ACTIONS
+    // ==========================
+    function resetForm() {
+      $("#form").reset();
+      $("#editId").value = "";
+      $("#btnSave").textContent = "Guardar";
+      $("#medio").focus();
+    }
+
+    function setTodayDefault() {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      $("#fecha").value = `${yyyy}-${mm}-${dd}`;
+    }
+
+    $("#form").addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const medio = $("#medio").value.trim();
+      const tipo = $("#tipo").value.trim();
+      const periodista = $("#periodista").value.trim();
+      const fecha = $("#fecha").value;
+
+      if (!medio || !tipo || !periodista || !fecha) return;
+
+      const editId = $("#editId").value;
+
+      if (editId) {
+        // update
+        records = records.map(r => r.id === editId ? { ...r, medio, tipo, periodista, fecha } : r);
+      } else {
+        // create
+        records.unshift({
+          id: uuid(),
+          medio, tipo, periodista, fecha,
+          created_at: new Date().toISOString()
+        });
+      }
+
+      saveData(records);
+      applyFilter();
+      resetForm();
+      setTodayDefault();
+    });
+
+    $("#btnClear").addEventListener("click", () => {
+      resetForm();
+      setTodayDefault();
+    });
+
+    $("#btnDeleteAll").addEventListener("click", () => {
+      if (!records.length) return;
+      const ok = confirm("¿Seguro que quieres eliminar TODOS los registros? Esta acción no se puede deshacer.");
+      if (!ok) return;
+      records = [];
+      filtered = [];
+      saveData(records);
+      resetForm();
+      setTodayDefault();
+      render();
+    });
+
+    $("#search").addEventListener("input", applyFilter);
+
+    // ==========================
+    // GLOBAL FUNCTIONS (para botones en tabla)
+    // ==========================
+    window.editRecord = function(id) {
+      const r = records.find(x => x.id === id);
+      if (!r) return;
+
+      $("#medio").value = r.medio || "";
+      $("#tipo").value = r.tipo || "";
+      $("#periodista").value = r.periodista || "";
+      $("#fecha").value = r.fecha || "";
+
+      $("#editId").value = r.id;
+      $("#btnSave").textContent = "Actualizar";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      $("#medio").focus();
+    }
+
+    window.deleteRecord = function(id) {
+      const r = records.find(x => x.id === id);
+      if (!r) return;
+
+      const ok = confirm(`¿Eliminar este registro?\n\nMedio: ${r.medio}\nTipo: ${r.tipo}\nPeriodista: ${r.periodista}\nFecha: ${fmtDateISOtoDMY(r.fecha)}`);
+      if (!ok) return;
+
+      records = records.filter(x => x.id !== id);
+      saveData(records);
+      applyFilter();
+
+      // si estabas editando el que borraste, limpia el form
+      if ($("#editId").value === id) {
+        resetForm();
+        setTodayDefault();
+      }
+    }
+
+    // ==========================
+    // INIT
+    // ==========================
+    setTodayDefault();
+    filtered = [...records];
+    render();
+  </script>
+</body>
+</html>
